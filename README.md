@@ -1,7 +1,7 @@
 # spark-accelerators-demo
 
 > [!NOTE]
-> This repository is intended for demonstration purposes only and its content is [APL-2.0](./LICENSE).
+> This repository is intended for demonstration purposes only. Its content is [APL-2.0](./LICENSE).
 
 This repository contains a basic demonstration of using two open-source native accelerators for [Apache Spark](https://spark.apache.org/):
 
