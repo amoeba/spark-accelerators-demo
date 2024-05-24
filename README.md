@@ -35,6 +35,7 @@ To run through this demo, you'll need:
 - git
 - Java 8
 - Docker w/ Docker Compose for running our demo Spark cluster
+- A Spark 3.4.2 binary release
 
 ## Gluten w/ Velox
 
