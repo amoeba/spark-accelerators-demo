@@ -22,7 +22,7 @@ Specifically,
 
 For example, Gluten only runs on Java 8 and each Gluten release only claims support for a single Spark version.
 DataFusion Comet, on the other hand, is more flexible and can run on multiple Java and Spark versions.
-For the purposes of this demo, we're using a version of Spark that is compatible with the version of Gluten we'll be building and also Comet: Spark 3.4.2.
+For the purposes of this demo, we're using a version of Spark that is compatible with the version of Gluten we'll be building: Spark 3.4.2.
 
 Download Spark 3.4.2 from https://archive.apache.org/dist/spark/spark-3.4.2/spark-3.4.2-bin-hadoop3.tgz.
 
@@ -31,6 +31,7 @@ Beyond that, in order to run through this demo, you'll need:
 - A Debian or RHEL-based Linux system with superuser privileges (mainly for building Gluten)
 - git
 - Java 8
+- A Rust toolchain
 - Docker w/ Docker Compose in case you want to run a more realistic cluster
 
 ## Gluten w/ Velox
@@ -97,6 +98,16 @@ VeloxColumnarToRowExec
 You can also open the Spark UI at https://localhost:4040 (by default) and see that Gluten adds a new UI tab for inspecting query plans.
 
 ## Apache DataFusion Comet
+
+### Building Comet
+
+The following steps are taken from the [Comet Installation User Guide](https://datafusion.apache.org/comet/user-guide/installation.html).
+
+```sh
+git clone https://github.com/apache/datafusion-comet.git``
+cd datafusion-comet
+make release PROFILES="-Pspark-3.4"
+```
 
 ### Running Comet
 
