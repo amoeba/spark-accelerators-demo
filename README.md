@@ -66,7 +66,7 @@ You should now have a binary JAR in `./package/target` named something like `glu
 
 ### Using Gluten
 
-Now we can launch a standalone Spark client/server to test that our built JAR works:
+Now we can launch a local mode Spark Shell to test that our built JAR works:
 
 ```sh
 export SPARK_HOME="/path/to/your/spark-3.4.2-bin-hadoop3"
