@@ -96,6 +96,28 @@ VeloxColumnarToRowExec
 
 You can also open the Spark UI at https://localhost:4040 (by default) and see that Gluten adds a new UI tab for inspecting query plans.
 
+Borrwing from the section on Comet later on in this README, we can create some test Parquet data:
+
+```scala
+scala> (0 until 10).toDF("a").write.mode("overwrite").parquet("/tmp/test"
+```
+
+This should print quite a lot of debug info (which is not shown here).
+
+```scala
+scala> spark.read.parquet("/tmp/test").createOrReplaceTempView("t1")
+```
+
+Now we can run a basic query to see that Velox picks up the filter pushdown:
+
+```scala
+scala> spark.sql("select * from t1 where a > 5").explain
+== Physical Plan ==
+VeloxColumnarToRowExec
++- ^(2) FilterExecTransformer (isnotnull(a#7) AND (a#7 > 5))
+   +- ^(2) NativeFileScan parquet [a#7] Batched: true, DataFilters: [isnotnull(a#7), (a#7 > 5)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/tmp/test], PartitionFilters: [], PushedFilters: [IsNotNull(a), GreaterThan(a,5)], ReadSchema: struct<a:int>
+```
+
 ## Apache DataFusion Comet
 
 ### Building Comet
@@ -166,3 +188,49 @@ scala> spark.sql("select * from t1 where a > 5").explain
 ```
 
 In contrast with Gluten, Comet does not currently extend the Spark UI (See [datafusion-comet/144](https://github.com/apache/datafusion-comet/issues/144)).
+
+## Next Steps
+
+The examples above run Gluten and Comet on Spark in local mode.
+Each respective `spark-shell` command can also connect to a Spark cluster if we append `--master spark://host:port` to either command.
+
+For example, we can start a Standalone cluster manually and then start shells
+
+```sh
+cd $SPARK_HOME
+./sbin/start-master.sh
+./sbin/start-worker.sh
+```
+
+Then start a regular Spark Shell:
+
+```sh
+./bin/spark-shell --master spark://localhost:7077
+```
+
+And, in another terminal, we can start a Shell with Gluten:
+
+```sh
+"$SPARK_HOME/bin/spark-shell" \
+    --master spark://localhost:7077 \
+    --conf spark.plugins=org.apache.gluten.GlutenPlugin \
+    --conf spark.memory.offHeap.enabled=true \
+    --conf spark.memory.offHeap.size=20g \
+    --conf spark.shuffle.manager=org.apache.spark.shuffle.sort.ColumnarShuffleManager \
+    --conf spark.driver.extraClassPath=$GLUTEN_JAR \
+    --conf spark.executor.extraClassPath=$GLUTEN_JAR
+```
+
+And, similarly, Comet:
+
+```sh
+"$SPARK_HOME/bin/spark-shell" \
+    --master spark://localhost:7077 \
+    --conf spark.driver.extraClassPath=$COMET_JAR \
+    --conf spark.executor.extraClassPath=$COMET_JAR \
+    --conf spark.sql.extensions=org.apache.comet.CometSparkSessionExtensions \
+    --conf spark.comet.enabled=true \
+    --conf spark.comet.exec.enabled=true \
+    --conf spark.comet.exec.all.enabled=true \
+    --conf spark.comet.explainFallback.enabled=true
+```
