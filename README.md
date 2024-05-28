@@ -32,7 +32,6 @@ Beyond that, in order to run through this demo, you'll need:
 - git
 - Java 8
 - A Rust toolchain
-- Docker w/ Docker Compose in case you want to run a more realistic cluster
 
 ## Gluten w/ Velox
 
