@@ -128,7 +128,12 @@ export COMET_JAR "/path/to/target/comet-spark-spark3.4_2.12-0.1.0-SNAPSHOT.jar"
           --conf spark.comet.explainFallback.enabled=true
 ```
 
-Once the shell starts, we can test a simple query:
+- `spark.comet.enabled` enables Comet
+- `spark.comet.exec.enabled` enables execution with Comet (instead of Spark)
+- `spark.comet.exec.all.enabled` turns on all Comet operators, instead of enabling operators one-by-one
+- `spark.comet.explainFallback.enabled` turns on logging when fallbacks are encountered
+
+Once the shell starts, we can test a simple query just to check that Comet is working:
 
 ```scala
 scala> spark.sql("select 1").explain
@@ -139,15 +144,17 @@ scala> spark.sql("select 1").explain
 +- *(1) Scan OneRowRelation[]
 ```
 
+This next bit is taken from the [Comet Installation Guide](https://datafusion.apache.org/comet/user-guide/installation.html) and does a nice job showing (1) logging in the case of fallbacks and (2) how Comet takes over parts of a plan, pushing a filter down into its Parquet scanner.
+
 ```scala
-scala> (0 until 10).toDF("a").write.mode("overwrite").parquet("/tmp/test")
+scala> (0 until 10).toDF("a").write.mode("overwrite").parquet("/tmp/test").explain
 24/05/26 20:17:37 WARN CometSparkSessionExtensions$CometExecRule: Comet cannot execute some parts of this plan natively because:
 	- LocalTableScan is not supported
 	- WriteFiles is not supported
 	- Execute InsertIntoHadoopFsRelationCommand is not supported
 ```
 
-```
+```scala
 scala> spark.read.parquet("/tmp/test").createOrReplaceTempView("t1")
 24/05/26 20:17:55 WARN CometSparkSessionExtensions$CometExecRule: Comet cannot execute some parts of this plan natively because Execute CreateViewCommand is not supported
 ```
