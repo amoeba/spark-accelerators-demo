@@ -104,7 +104,7 @@ You can also open the Spark UI at https://localhost:4040 (by default) and see th
 The following steps are taken from the [Comet Installation User Guide](https://datafusion.apache.org/comet/user-guide/installation.html).
 
 ```sh
-git clone https://github.com/apache/datafusion-comet.git``
+git clone https://github.com/apache/datafusion-comet.git
 cd datafusion-comet
 make release PROFILES="-Pspark-3.4"
 ```
