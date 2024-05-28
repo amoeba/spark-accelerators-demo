@@ -72,13 +72,13 @@ Now we can launch a standalone Spark client/server to test that our built JAR wo
 export SPARK_HOME="/path/to/your/spark-3.4.1-bin-hadoop3"
 export GLUTEN_JAR="/path/to/your/built/gluten.jar"
 
-$SPARK_HOME/bin/spark-shell \
-  --conf spark.plugins=org.apache.gluten.GlutenPlugin \
-  --conf spark.memory.offHeap.enabled=true \
-  --conf spark.memory.offHeap.size=20g \
-  --conf spark.shuffle.manager=org.apache.spark.shuffle.sort.ColumnarShuffleManager \
-  --conf spark.driver.extraClassPath=$GLUTEN_JAR \
-  --conf spark.executor.extraClassPath=$GLUTEN_JAR
+"$SPARK_HOME/bin/spark-shell" \
+    --conf spark.plugins=org.apache.gluten.GlutenPlugin \
+    --conf spark.memory.offHeap.enabled=true \
+    --conf spark.memory.offHeap.size=20g \
+    --conf spark.shuffle.manager=org.apache.spark.shuffle.sort.ColumnarShuffleManager \
+    --conf spark.driver.extraClassPath=$GLUTEN_JAR \
+    --conf spark.executor.extraClassPath=$GLUTEN_JAR
 ```
 
 Once we're in the Spark Shell, we can run a basic query and ask for an EXPLAIN to check that our query will be executed with Velox:
@@ -117,14 +117,13 @@ export SPARK_HOME="/path/to/your/spark-3.4.1-bin-hadoop3"
 export COMET_JAR "/path/to/target/comet-spark-spark3.4_2.12-0.1.0-SNAPSHOT.jar"
 
 "$SPARK_HOME/bin/spark-shell" \
-          --jars $COMET_JAR \
-          --conf spark.driver.extraClassPath=$COMET_JAR \
-          --conf spark.executor.extraClassPath=$COMET_JAR \
-          --conf spark.sql.extensions=org.apache.comet.CometSparkSessionExtensions \
-          --conf spark.comet.enabled=true \
-          --conf spark.comet.exec.enabled=true \
-          --conf spark.comet.exec.all.enabled=true \
-          --conf spark.comet.explainFallback.enabled=true
+    --conf spark.driver.extraClassPath=$COMET_JAR \
+    --conf spark.executor.extraClassPath=$COMET_JAR \
+    --conf spark.sql.extensions=org.apache.comet.CometSparkSessionExtensions \
+    --conf spark.comet.enabled=true \
+    --conf spark.comet.exec.enabled=true \
+    --conf spark.comet.exec.all.enabled=true \
+    --conf spark.comet.explainFallback.enabled=true
 ```
 
 - `spark.comet.enabled` enables Comet
