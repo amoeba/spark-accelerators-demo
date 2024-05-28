@@ -69,7 +69,7 @@ You should now have a binary JAR in `./package/target` named something like `glu
 Now we can launch a standalone Spark client/server to test that our built JAR works:
 
 ```sh
-export SPARK_HOME="/path/to/your/spark-3.4.1-bin-hadoop3"
+export SPARK_HOME="/path/to/your/spark-3.4.2-bin-hadoop3"
 export GLUTEN_JAR="/path/to/your/built/gluten.jar"
 
 "$SPARK_HOME/bin/spark-shell" \
@@ -135,7 +135,7 @@ make release PROFILES="-Pspark-3.4"
 Running a Spark Shell w/ comet is very similar to how we ran Gluten.
 
 ```sh
-export SPARK_HOME="/path/to/your/spark-3.4.1-bin-hadoop3"
+export SPARK_HOME="/path/to/your/spark-3.4.2-bin-hadoop3"
 export COMET_JAR "/path/to/target/comet-spark-spark3.4_2.12-0.1.0-SNAPSHOT.jar"
 
 "$SPARK_HOME/bin/spark-shell" \
