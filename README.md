@@ -139,6 +139,7 @@ export SPARK_HOME="/path/to/your/spark-3.4.2-bin-hadoop3"
 export COMET_JAR "/path/to/target/comet-spark-spark3.4_2.12-0.1.0-SNAPSHOT.jar"
 
 "$SPARK_HOME/bin/spark-shell" \
+    --jars $COMET_JAR \
     --conf spark.driver.extraClassPath=$COMET_JAR \
     --conf spark.executor.extraClassPath=$COMET_JAR \
     --conf spark.sql.extensions=org.apache.comet.CometSparkSessionExtensions \
