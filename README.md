@@ -146,7 +146,7 @@ scala> spark.sql("select 1").explain
 This next bit is taken from the [Comet Installation Guide](https://datafusion.apache.org/comet/user-guide/installation.html) and does a nice job showing (1) logging in the case of fallbacks and (2) how Comet takes over parts of a plan, pushing a filter down into its Parquet scanner.
 
 ```scala
-scala> (0 until 10).toDF("a").write.mode("overwrite").parquet("/tmp/test").explain
+scala> (0 until 10).toDF("a").write.mode("overwrite").parquet("/tmp/test")
 24/05/26 20:17:37 WARN CometSparkSessionExtensions$CometExecRule: Comet cannot execute some parts of this plan natively because:
 	- LocalTableScan is not supported
 	- WriteFiles is not supported
@@ -165,3 +165,5 @@ scala> spark.sql("select * from t1 where a > 5").explain
 +- CometFilter [a#9], (isnotnull(a#9) AND (a#9 > 5))
    +- CometScan parquet [a#9] Batched: true, DataFilters: [isnotnull(a#9), (a#9 > 5)], Format: CometParquet, Location: InMemoryFileIndex(1 paths)[file:/tmp/test], PartitionFilters: [], PushedFilters: [IsNotNull(a), GreaterThan(a,5)], ReadSchema: struct<a:int>
 ```
+
+In contrast with Gluten, Comet does not currently extend the Spark UI (See [datafusion-comet/144](https://github.com/apache/datafusion-comet/issues/144)).
