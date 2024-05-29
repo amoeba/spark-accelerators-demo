@@ -191,3 +191,50 @@ scala> spark.sql("select * from t1 where a > 5").explain
 ```
 
 In contrast with Gluten, Comet does not currently extend the Spark UI (See [datafusion-comet/144](https://github.com/apache/datafusion-comet/issues/144)).
+
+## Comparison
+
+To get a more realistic view of how vanilla Spark, Gluten, and Comet compare, let's run a query against the [NYC Taxi trip record dataset](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
+For simplicity, we're just using local-mode Spark and not a Spark cluster so the results here may not be reproducible in a real Spark deployment.
+
+### Getting The Data
+
+A copy of the dataset is hosted on S3 at `s3://ursa-labs-taxi-data"/nyc-taxi`.
+I usually use the arrow R package like this to download it:
+
+```R
+arrow::copy_files("s3://ursa-labs-taxi-data", "nyc-taxi")
+```
+
+### Setup
+
+We'll run the exact same commands in each Spark Shell,
+
+```scala
+var taxi = spark.read.parquet("/Users/bryce/Datasets/nyc-taxi")
+taxi.createOrReplaceTempView("nyctaxi")
+spark.sql("SELECT extract(year from pickup_datetime) as trip_year, extract(month from pickup_datetime) as trip_month, extract(hour from pickup_datetime) as trip_hour, avg(trip_distance) as avg_trip_distance, round(avg(total_amount), 2) as avg_total_amount, round(avg(tip_amount), 2) as avg_tip_amount, count(*) as num_trips FROM trips GROUP BY trip_year, trip_month, trip_hour ORDER BY trip_year, trip_month, trip_hour;").show
+```
+
+### Vanilla Spark
+
+- 1 job, 1 stage, 534 tasks
+- 50s
+
+### Gluten
+
+
+
+### Comet
+
+```sh
+"$SPARK_HOME/bin/spark-shell" \
+    --jars $COMET_JAR \
+    --conf spark.driver.extraClassPath=$COMET_JAR \
+    --conf spark.executor.extraClassPath=$COMET_JAR \
+    --conf spark.sql.extensions=org.apache.comet.CometSparkSessionExtensions \
+    --conf spark.comet.enabled=true \
+    --conf spark.comet.exec.enabled=true \
+    --conf spark.comet.exec.all.enabled=true \
+    --conf spark.comet.explainFallback.enabled=true
+```
