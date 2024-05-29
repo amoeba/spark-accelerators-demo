@@ -132,7 +132,7 @@ make release PROFILES="-Pspark-3.4"
 
 ### Running Comet
 
-Running a Spark Shell w/ comet is very similar to how we ran Gluten.
+Running a Spark Shell w/ Comet is very similar to how we ran Gluten.
 
 ```sh
 export SPARK_HOME="/path/to/your/spark-3.4.2-bin-hadoop3"
@@ -167,7 +167,7 @@ scala> spark.sql("select 1").explain
 +- *(1) Scan OneRowRelation[]
 ```
 
-This next bit is taken from the [Comet Installation Guide](https://datafusion.apache.org/comet/user-guide/installation.html) and does a nice job showing (1) logging in the case of fallbacks and (2) how Comet takes over parts of a plan, pushing a filter down into its Parquet scanner.
+This next bit is taken from the [Comet Installation Guide](https://datafusion.apache.org/comet/user-guide/installation.html) and does a nice job showing (1) logging in the case of fallbacks and (2) how Comet takes over parts of a plan, pushing a filter down into its native Parquet scanner.
 
 ```scala
 scala> (0 until 10).toDF("a").write.mode("overwrite").parquet("/tmp/test")
@@ -190,12 +190,12 @@ scala> spark.sql("select * from t1 where a > 5").explain
    +- CometScan parquet [a#9] Batched: true, DataFilters: [isnotnull(a#9), (a#9 > 5)], Format: CometParquet, Location: InMemoryFileIndex(1 paths)[file:/tmp/test], PartitionFilters: [], PushedFilters: [IsNotNull(a), GreaterThan(a,5)], ReadSchema: struct<a:int>
 ```
 
-In contrast with Gluten, Comet does not currently extend the Spark UI (See [datafusion-comet/144](https://github.com/apache/datafusion-comet/issues/144)).
+In contrast with Gluten, Comet does not currently extend the Spark UI (See [datafusion-comet/144](https://github.com/apache/datafusion-comet/issues/144)) so the only information we get is in the shell.
 
 ## Comparison
 
-To get a more realistic view of how vanilla Spark, Gluten, and Comet compare, let's run a query against the [NYC Taxi trip record dataset](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
-For simplicity, we're just using local-mode Spark and not a Spark cluster so the results here may not be reproducible in a real Spark deployment.
+To get a more realistic view of how vanilla Spark, Gluten, and Comet compare, we can query the [NYC Taxi trip record dataset](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) in Parquet format.
+For simplicity, we're just using local-mode Spark and not a Spark cluster so the results we get may be quite different from those we'd get against a real cluster.
 
 ### Getting The Data
 
@@ -210,12 +210,21 @@ aws s3 cp \
    ~/Datasets/nyc-taxi
 ```
 
+Note: The data is around 70GB so this may take a while.
+
 ### Test Scenario
 
-We'll run the exact same commands in each Spark Shell which essentially makes the NYC Taxi dataset available to Spark and then runs an aggregation query on it:
+We'll test four scenarios:
+
+- Spark 3.4.2
+- Gluten w/ Velox
+- Comet w/o Comet Shuffle
+- Comet w/ Comet Shuffle
+
+In each scenario, we run the exact same sequence of commands:
 
 ```scala
-var trips = spark.read.parquet("/home/bryce/Datasets/nyc-taxi")
+var trips = spark.read.parquet("/home/user/Datasets/nyc-taxi")
 trips.createOrReplaceTempView("trips")
 spark.sql("SELECT extract(year from pickup_datetime) as trip_year, extract(month from pickup_datetime) as trip_month, extract(hour from pickup_datetime) as trip_hour, avg(trip_distance) as avg_trip_distance, round(avg(total_amount), 2) as avg_total_amount, round(avg(tip_amount), 2) as avg_tip_amount, count(*) as num_trips FROM trips GROUP BY trip_year, trip_month, trip_hour ORDER BY trip_year, trip_month, trip_hour;").show
 ```
@@ -239,19 +248,19 @@ ORDER BY
    trip_year, trip_month, trip_hour;
 ```
 
-The timings are from running on a Ryzen 5800H w/ 32GiB of RAM:
+These are the timings for the four scenarios on a Ryzen 5800H w/ 32GiB of RAM. Each scenario was only run once:
 
 |         Scenario         |  Time  |
 | ------------------------ | ------ |
-| Spark 3.4.1              | 1.4min |
+| Spark 3.4.2              | 1.4min |
 | + Gluten w/ Velox        | 2.2min |
 | + Comet, default         | 2.0min |
 | + Comet w/ Comet Shuffle | 1.8min |
 
 This result might be surprising since we might expect Spark to be slower than the accelerators but I think some of the slowdown is likely due to fallbacks.
-However, given such similar timings, I expect that if we were to run the same workload against a cluster with four or more workers we'd get better timings from each of the accelerators.
+Given such similar timings, I expect that if we were to run the same workload against a cluster with four or more workers we'd get better timings from each of the accelerators.
 
-### Gluten
+### Gluten's UI
 
 There's no output in the Spark Shell when we run the query but Gluten's UI shows a lot of information.
 Gluten helpfully shows our query had two fallback nodes:
@@ -260,7 +269,7 @@ Gluten helpfully shows our query had two fallback nodes:
 
 Most of the interesting information Gluten provides is available in the Spark UI and I didn't include it here due to its size.
 
-### Comet
+### Comet's Output
 
 Comet prints all of its debug information to the shell and the output for this query shows relevant warnings.
 This is the output of our query when we ran Comet with Comet Shuffle disabled:
